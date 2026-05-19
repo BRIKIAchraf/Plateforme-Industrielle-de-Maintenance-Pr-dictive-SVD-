@@ -1,0 +1,37 @@
+replicaCount: 2
+
+image:
+  repository: predictive-maintenance-svd
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+service:
+  type: ClusterIP
+  port: 8000
+
+resources:
+  limits:
+    cpu: "2"
+    memory: 4Gi
+  requests:
+    cpu: "500m"
+    memory: 1Gi
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+env:
+  KAFKA_BOOTSTRAP_SERVERS: "kafka:29092"
+  KAFKA_TOPIC: "machinery_sensors"
+  REDIS_HOST: "redis-master"
+  REDIS_PORT: "6379"
+
+# Prometheus operator scrapers integration
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "8000"
+  prometheus.io/path: "/metrics"

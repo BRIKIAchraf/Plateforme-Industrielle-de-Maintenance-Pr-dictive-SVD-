@@ -1,0 +1,63 @@
+# Configuration Industrielle pour la Maintenance Prédictive
+
+system:
+  env: "production"
+  debug: false
+
+kafka:
+  bootstrap_servers: "${KAFKA_BOOTSTRAP_SERVERS:-localhost:9092}"
+  topic: "${KAFKA_TOPIC:-machinery_sensors}"
+  group_id: "predictive_maintenance_group"
+  auth:
+    security_protocol: "${KAFKA_SECURITY_PROTOCOL:-PLAINTEXT}"
+    sasl_mechanism: "${KAFKA_SASL_MECHANISM:-PLAIN}"
+    sasl_username: "${KAFKA_SASL_USERNAME:-}"
+    sasl_password: "${KAFKA_SASL_PASSWORD:-}"
+
+spark:
+  app_name: "IndustrialPredictiveMaintenanceSVD"
+  master: "${SPARK_MASTER:-local[*]}"
+  checkpoint_dir: "${SPARK_CHECKPOINT_DIR:-/tmp/spark-checkpoints}"
+  watermark_duration: "10 seconds"
+  trigger_processing_time: "5 seconds"
+  backpressure:
+    enabled: true
+    initial_rate: 1000
+    max_rate: 10000
+
+redis:
+  host: "${REDIS_HOST:-localhost}"
+  port: "${REDIS_PORT:-6379}"
+  password: "${REDIS_PASSWORD:-}"
+  db: 0
+
+prometheus:
+  port: 8000
+
+signal_processing:
+  sampling_rate_hz: 1000  # 1 kHz sampling rate
+  butterworth:
+    cutoff_hz: 150        # low-pass cutoff at 150 Hz
+    order: 5
+  wavelet:
+    wavelet_name: "db4"
+    level: 3
+
+preprocessing:
+  imputation:
+    kalman_q: 1e-4        # Process noise covariance
+    kalman_r: 1e-2        # Measurement noise covariance
+
+models:
+  incremental_svd:
+    n_components: 5
+    forgetting_factor: 0.99  # Adapt baseline over time (drift management)
+  autoencoder:
+    input_dim: 10          # Number of sensor channels
+    latent_dim: 3
+    epochs: 10
+    batch_size: 64
+    learning_rate: 0.001
+  hybrid_anomaly:
+    ewma_alpha: 0.1        # Adaptive threshold weight
+    initial_threshold: 3.0  # Mean + 3*std as starting point
