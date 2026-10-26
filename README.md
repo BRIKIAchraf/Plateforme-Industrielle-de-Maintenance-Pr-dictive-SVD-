@@ -86,3 +86,12 @@ This is a portfolio/research implementation. A real predictive-maintenance deplo
 ## Author
 
 **Achraf BRIKI** · [LinkedIn](https://www.linkedin.com/in/achrafbriki/) · [Portfolio](https://achrafbriki.com)
+
+## Delivery profile
+
+**Status:** Prototype  
+**Demo:** Local streaming and anomaly-detection experiment.  
+**Prerequisites:** Python, Docker, Kafka, Redis and MLflow.  
+**Validation:** SVD reconstruction, numerical stability, missing sensors, out-of-order events and alert deduplication.  
+**Performance plan:** Measure sensor count, SVD time, alert latency, memory use and false-positive rate.  
+**Roadmap:** Synthetic fixtures, coverage, baseline comparisons, labelled-fault evaluation and CI.
