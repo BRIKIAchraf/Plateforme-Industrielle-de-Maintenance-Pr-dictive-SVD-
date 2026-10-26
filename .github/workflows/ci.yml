@@ -1,0 +1,92 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  documentation:
+    name: Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Require README
+        run: test -s README.md
+      - name: Check for committed secrets patterns
+        shell: bash
+        run: |
+          if grep -RInE "(api[_-]?key|secret|password|token)[[:space:]]*=[[:space:]]*['\"'][^'\"']{8,}" . --exclude-dir=.git --exclude='*.lock' --exclude='*.example' --exclude='.env.example'; then
+            echo "Potential hard-coded secret pattern found."
+            exit 1
+          fi
+
+  python:
+    name: Python checks
+    if: ${{ hashFiles('**/*.py') != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip pytest
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Compile sources
+        run: python -m compileall -q .
+      - name: Run tests when present
+        shell: bash
+        run: |
+          if find . -type f \( -name "test_*.py" -o -path "*/tests/*.py" \) -not -path "./.git/*" | grep -q .; then
+            python -m pytest -q
+          else
+            echo "No Python test files found; add tests as the project matures."
+          fi
+
+  node:
+    name: Node build
+    if: ${{ hashFiles('**/package.json') != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+      - name: Install and build
+        shell: bash
+        run: |
+          for package in $(find . -name package.json -not -path "./node_modules/*"); do
+            directory=$(dirname "$package")
+            cd "$directory"
+            if [ -f package-lock.json ]; then npm ci; else npm install; fi
+            if npm run | grep -q " build"; then npm run build; fi
+            cd - >/dev/null
+          done
+
+  containers:
+    name: Container checks
+    if: ${{ hashFiles('**/Dockerfile', '**/docker-compose.yml', '**/compose.yml') != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate Compose files
+        shell: bash
+        run: |
+          for compose in $(find . -name docker-compose.yml -o -name compose.yml); do
+            docker compose -f "$compose" config --quiet
+          done
+      - name: Build Dockerfiles
+        shell: bash
+        run: |
+          for dockerfile in $(find . -name Dockerfile -not -path "./.git/*"); do
+            context=$(dirname "$dockerfile")
+            docker build --file "$dockerfile" "$context"
+          done
