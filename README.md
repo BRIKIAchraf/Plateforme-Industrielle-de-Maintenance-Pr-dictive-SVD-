@@ -1,3 +1,8 @@
+
+
+## About
+
+Real-time predictive-maintenance research platform using SVD-based low-rank reconstruction, anomaly scoring, adaptive alerting and MLOps tracking.
 # Predictive Maintenance Platform with SVD
 
 Real-time anomaly-detection architecture for industrial sensor streams using low-rank reconstruction, adaptive thresholds and MLOps tracking.
