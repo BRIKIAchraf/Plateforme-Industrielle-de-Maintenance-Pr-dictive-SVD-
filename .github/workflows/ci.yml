@@ -76,6 +76,7 @@ jobs:
       - name: Validate Compose files
         shell: bash
         run: |
+          if [ -f .env.example ]; then cp .env.example .env; fi
           for compose in $(find . -name docker-compose.yml -o -name compose.yml); do
             if [ -f .env.example ]; then docker compose --env-file .env.example -f "$compose" config --quiet; else docker compose -f "$compose" config --quiet; fi
           done
