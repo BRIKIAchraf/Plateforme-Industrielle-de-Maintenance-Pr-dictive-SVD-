@@ -1,0 +1,46 @@
+name: Quality checks
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Compile Python files
+        shell: bash
+        run: |
+          files=$(find . -type f -name "*.py" -not -path "./.git/*")
+          if [ -n "$files" ]; then
+            python -m compileall -q .
+          else
+            echo "No Python sources found; syntax check skipped."
+          fi
+
+      - name: Run tests when present
+        shell: bash
+        run: |
+          if find . -type f \( -name "test_*.py" -o -path "*/tests/*.py" \) -not -path "./.git/*" | grep -q .; then
+            python -m pip install --upgrade pytest
+            python -m pytest -q
+          else
+            echo "No automated Python tests found yet."
+          fi
+
+      - name: Verify project documentation
+        shell: bash
+        run: |
+          test -s README.md
+          echo "README.md is present and non-empty."
