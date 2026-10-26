@@ -27,7 +27,6 @@ jobs:
 
   python:
     name: Python checks
-    if: ${{ hashFiles('**/*.py') != '' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -52,14 +51,12 @@ jobs:
 
   node:
     name: Node build
-    if: ${{ hashFiles('**/package.json') != '' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: npm
       - name: Install and build
         shell: bash
         run: |
@@ -73,7 +70,6 @@ jobs:
 
   containers:
     name: Container checks
-    if: ${{ hashFiles('**/Dockerfile', '**/docker-compose.yml', '**/compose.yml') != '' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
