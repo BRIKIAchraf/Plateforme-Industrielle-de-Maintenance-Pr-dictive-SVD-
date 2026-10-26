@@ -1,0 +1,12 @@
+{
+  "machine_id": "machine-003",
+  "window_start": "2026-01-15T10:30:00Z",
+  "window_seconds": 60,
+  "features": {
+    "vibration_x_rms": 0.18,
+    "vibration_y_rms": 0.21,
+    "temperature_c": 67.4,
+    "pressure_bar": 4.9
+  },
+  "expected_label": "nominal"
+}
