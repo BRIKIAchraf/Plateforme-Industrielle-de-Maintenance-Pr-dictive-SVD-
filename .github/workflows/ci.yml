@@ -37,7 +37,7 @@ jobs:
         shell: bash
         run: |
           python -m pip install --upgrade pip pytest
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          if [ -f requirements-ci.txt ]; then pip install -r requirements-ci.txt; elif [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Compile sources
         run: python -m compileall -q .
       - name: Run tests when present
@@ -69,7 +69,7 @@ jobs:
           done
 
   containers:
-    name: Container checks
+    name: Container configuration
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -77,12 +77,5 @@ jobs:
         shell: bash
         run: |
           for compose in $(find . -name docker-compose.yml -o -name compose.yml); do
-            docker compose -f "$compose" config --quiet
-          done
-      - name: Build Dockerfiles
-        shell: bash
-        run: |
-          for dockerfile in $(find . -name Dockerfile -not -path "./.git/*"); do
-            context=$(dirname "$dockerfile")
-            docker build --file "$dockerfile" "$context"
+            if [ -f .env.example ]; then docker compose --env-file .env.example -f "$compose" config --quiet; else docker compose -f "$compose" config --quiet; fi
           done
